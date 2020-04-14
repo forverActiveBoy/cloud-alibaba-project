@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        # 指定配置中心的地址
+        server-addr: 127.0.0.1:8848
+        # 想要加载yaml格式的内容,而不是properties格式
+        file-extension: yaml
+        # 配置开发环境
+        group: dev
+  # 指定dataId
+  application:
+    name: alibaba-server-provider

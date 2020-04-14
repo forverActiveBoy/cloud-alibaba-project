@@ -1,0 +1,24 @@
+# 服务访问路径
+server:
+  servlet:
+    context-path: /
+  # 端口号
+  port: 8082
+  # 字符编码集
+  tomcat:
+    uri-encoding: utf-8
+spring:
+  # 应用名称
+  application:
+    name: alibaba-server-consumer
+  # 指定注册中心的地址
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+dubbo:
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: spring-cloud://localhost
