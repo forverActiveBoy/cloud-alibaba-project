@@ -26,7 +26,6 @@ public class UserController {
     private String uploadPath;
 
     @RequestMapping(value = {"/v1/user/{name}"},method = RequestMethod.GET)
-
     @SentinelResource
     public String sayHello(@PathVariable(value = "name") String name){
         log.info("服务提供者入参,name:[{}] and uploadPath:[{}]",name,uploadPath);
