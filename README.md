@@ -11,6 +11,8 @@ springcloud alibaba各组件的使用：
     alibaba-server-provider----------本地接口实现，服务提供者，发布服务      
     alibaba-server-consumer----------服务消费者，订阅服务     
     alibaba-server-gateway-----------网关层，前端请求的统一转发，限流，权限设置    
+路由规则：
+    
     
       
     
