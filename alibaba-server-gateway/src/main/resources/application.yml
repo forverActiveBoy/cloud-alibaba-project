@@ -1,4 +1,22 @@
+
 spring:
+  # 应用名称
+  application:
+    name: alibaba-server-gateway
   cloud:
+    nacos:
+      # 指定注册中心的地址
+      discovery:
+        server-addr: 127.0.0.1:8848
     gateway:
       routes:
+        id: server-provider
+        uri: lb://alibaba-server-provider
+        predicates:
+          - Path=/gateway/**
+        filters:
+          - StripPrefix=1
+server:
+  port: 8083
+  servlet:
+    context-path: /
