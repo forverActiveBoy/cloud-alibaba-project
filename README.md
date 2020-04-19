@@ -1,6 +1,6 @@
 # cloud-alibaba-project
 springcloud alibaba各组件的使用：  
-环境：nacos1.2.0，dubbo，  
+环境：nacos,dubbo,sentinel,gateway  
 工程介绍：   
     cloud-alibaba-project--------父工程，管理依赖     
     alibaba-server-api---------------本地接口定义   
@@ -11,7 +11,7 @@ springcloud alibaba各组件的使用：
     alibaba-server-provider----------本地接口实现，服务提供者，发布服务      
     alibaba-server-consumer----------服务消费者，订阅服务     
     alibaba-server-gateway-----------网关层，前端请求的统一转发，限流，权限设置    
-路由规则：
+clone下来之后，先到soft-ware目录下，将nacos和sentinel跑起来，然后再运行provider，consumer和gateway
     
     
       
