@@ -13,6 +13,12 @@
 
 
     <dependencies>
+        <!--引用common层-->
+        <dependency>
+            <groupId>com.czbank</groupId>
+            <artifactId>alibaba-server-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!--引用api层-->
         <dependency>
             <artifactId>alibaba-server-api</artifactId>
