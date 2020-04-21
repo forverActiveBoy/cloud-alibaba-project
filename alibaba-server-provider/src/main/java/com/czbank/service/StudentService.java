@@ -13,4 +13,10 @@ public interface StudentService {
      * @return
      */
     List<Student> queryList();
+
+    /**
+     * 添加学生
+     * @param student
+     */
+    void addStudent(Student student);
 }
