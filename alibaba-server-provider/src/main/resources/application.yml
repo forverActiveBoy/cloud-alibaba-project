@@ -1,8 +1,1 @@
-#服务暴露相关
-dubbo:
-  protocol:
-    name: dubbo
-    port: -1
-  # 注册中心地址和springcloud一致
-  registry:
-    address: spring-cloud://localhost
+#yml写静态配置，动态配置全部写nacos
