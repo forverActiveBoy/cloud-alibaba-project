@@ -39,7 +39,7 @@
     <!-- com.alibaba为根包，也就是只要是发生在这个根包下面的所有日志操作行为的权限都是DEBUG -->
     <!-- 级别依次为【从高到低】：FATAL > ERROR > WARN > INFO > DEBUG > TRACE -->
     <!--<logger name="com.czbank" level="info"></logger>-->
-    <logger name="org.springframework.cloud.gateway" level="DEBUG"></logger>
+    <logger name="org.springframework.cloud.gateway" level="info"></logger>
     <!-- 控制台输出日志级别 -->
     <root level="info">
         <appender-ref ref="alibabaServerProviderLogConsole"/>
