@@ -1,9 +1,11 @@
 package com.czbank;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author foreverActiveBoy
@@ -17,6 +19,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @SpringBootApplication
 @EnableDubbo(scanBasePackages = {"com.czbank.service"})
+@EnableTransactionManagement
+@MapperScan(value = {"com.czbank.dao"})
 public class ProviderApplicatiion {
     public static void main(String[] args) {
         SpringApplication.run(ProviderApplicatiion.class,args);
