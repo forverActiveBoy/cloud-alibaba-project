@@ -13,6 +13,18 @@
 
 
     <dependencies>
+        <!--引用api层-->
+        <dependency>
+            <artifactId>alibaba-server-api</artifactId>
+            <groupId>com.czbank</groupId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--引用base层-->
+        <dependency>
+            <groupId>com.czbank</groupId>
+            <artifactId>alibaba-server-base</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -21,12 +33,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-dubbo</artifactId>
-        </dependency>
-        <!--引用api层-->
-        <dependency>
-            <artifactId>alibaba-server-api</artifactId>
-            <groupId>com.czbank</groupId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
         <!--sentinel限流配置持久化到nacos-->
         <dependency>
