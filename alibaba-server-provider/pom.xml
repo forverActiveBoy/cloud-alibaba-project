@@ -19,7 +19,6 @@
         </dependency>
         <!--引用dubbo相关依赖-->
         <dependency>
-            <!--<groupId>com.alibaba.cloud</groupId>-->
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-dubbo</artifactId>
         </dependency>
