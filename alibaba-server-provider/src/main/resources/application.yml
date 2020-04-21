@@ -1,1 +1,11 @@
 #yml写静态配置，动态配置全部写nacos
+#mybatis相关配置
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud-alibaba?autoReconnect=true&useUnicode=yes&characterEncoding=UTF8
+    username: root
+    password: 1234
+mybatis:
+  mapper-locations: classpath:com/czbank/dao/*Dao.xml
