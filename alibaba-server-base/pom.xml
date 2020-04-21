@@ -12,6 +12,11 @@
     <artifactId>alibaba-server-base</artifactId>
 
     <dependencies>
+        <!--web相关-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
         <!--lombok相关依赖-->
         <dependency>
             <groupId>org.projectlombok</groupId>
