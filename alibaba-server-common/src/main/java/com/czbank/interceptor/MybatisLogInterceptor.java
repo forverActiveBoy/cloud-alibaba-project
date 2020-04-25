@@ -1,6 +1,5 @@
 package com.czbank.interceptor;
 
-import com.alibaba.druid.sql.SQLUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
@@ -8,12 +7,15 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.stereotype.Component;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+
+import java.text.DateFormat;
+import java.util.*;
 
 /**
  * @author foreverActiveBoy
@@ -54,12 +56,12 @@ public class MybatisLogInterceptor implements Interceptor {
         }
         //  获取带占位符的sql
         String sql = boundSql.getSql();
-        //  这个ParameterMapping表示当前SQL绑定的是哪些参数,及参数类型,但并不是参数本身
+
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        List<Object> paramList = new ArrayList();
-        paramList.addAll(parameterMappings);
-        //  druid格式化sql的工具类
-        String targetSql = SQLUtils.format(sql, "mysql", paramList);
+        Configuration configuration = mappedStatement.getConfiguration();
+
+        String targetSql = assembleSql(configuration, boundSql);
+
         long startTime = System.nanoTime();
         //  放行
         Object o = invocation.proceed();
@@ -68,6 +70,84 @@ public class MybatisLogInterceptor implements Interceptor {
         double appleTime = (endTime - startTime) / 1E9;
         log.info("mapper名字mapperName:[{}] and dao方法名字:[{}] and sql耗时applyTime:[{}]秒 and targetSql:[{}]",mapperName,daoMethodName,appleTime,targetSql);
         return o;
+    }
+
+    /**
+     * 组装sql信息
+     *
+     * @param configuration
+     * @param boundSql
+     * @return
+     */
+    private String assembleSql(Configuration configuration, BoundSql boundSql) {
+        Object sqlParameter = boundSql.getParameterObject();
+        //  这个ParameterMapping表示当前SQL绑定的是哪些参数,及参数类型,但并不是参数本身
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        String sql = boundSql.getSql().replaceAll("[\\s+]", "").replaceAll("from", "\n\tFROM\n\t").replaceAll("select", "\n\tSELECT\t\n");
+        if (parameterMappings.size() > 0 && sqlParameter != null) {
+            TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+            if (typeHandlerRegistry.hasTypeHandler(sqlParameter.getClass())) {
+                sql = sql.replaceFirst("\\?", getParameterValue(sqlParameter));
+            } else {
+                MetaObject metaObject = configuration.newMetaObject(sqlParameter);
+                for (ParameterMapping parameterMapping : parameterMappings) {
+                    String propertyName = parameterMapping.getProperty();
+                    if (metaObject.hasGetter(propertyName)) {
+                        Object obj = metaObject.getValue(propertyName);
+                        sql = sql.replaceFirst("\\?", getParameterValue(obj));
+                    } else if (boundSql.hasAdditionalParameter(propertyName)) {
+                        Object obj = boundSql.getAdditionalParameter(propertyName);
+                        sql = sql.replaceFirst("\\?", getParameterValue(obj));
+                    }
+                }
+            }
+
+        }
+        return sql;
+    }
+
+
+    /**
+     * 获取参数对应string值
+     *
+     * @param obj
+     * @return
+     */
+    private String getParameterValue(Object obj) {
+        String value = "";
+        if (obj instanceof String) {
+            value = "'".concat(obj.toString()).concat("'");
+        } else if (obj instanceof Date) {
+            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.CHINA);
+            value = "'".concat(dateFormat.format(new Date())) + "'";
+        } else {
+            if (obj != null) {
+                value = obj.toString();
+            } else {
+                value = "";
+            }
+        }
+        return value != null ? makeStringAllRegExp(value) : value;
+    }
+
+    /**
+     * 转义正则特殊字符串
+     *
+     * @param str
+     * @return
+     */
+    private String makeStringAllRegExp(String str) {
+        if (str != null && !str.equals("")) {
+            return str.replace("\\", "\\\\").replace("*", "\\*")
+                    .replace("+", "\\+").replace("|", "\\|")
+                    .replace("{", "\\{").replace("}", "\\}")
+                    .replace("(", "\\(").replace(")", "\\)")
+                    .replace("^", "\\^").replace("$", "\\$")
+                    .replace("[", "\\[").replace("]", "\\]")
+                    .replace("?", "\\?").replace(",", "\\,")
+                    .replace(".", "\\.").replace("&", "\\&");
+        }
+        return str;
     }
 
     /**
