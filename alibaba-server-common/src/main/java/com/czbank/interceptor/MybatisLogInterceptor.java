@@ -57,7 +57,6 @@ public class MybatisLogInterceptor implements Interceptor {
         //  获取带占位符的sql
         String sql = boundSql.getSql();
 
-        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
         Configuration configuration = mappedStatement.getConfiguration();
 
         String targetSql = assembleSql(configuration, boundSql);
@@ -83,7 +82,8 @@ public class MybatisLogInterceptor implements Interceptor {
         Object sqlParameter = boundSql.getParameterObject();
         //  这个ParameterMapping表示当前SQL绑定的是哪些参数,及参数类型,但并不是参数本身
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        String sql = boundSql.getSql().replaceAll("[\\s+]", "").replaceAll("from", "\n\tFROM\n\t").replaceAll("select", "\n\tSELECT\t\n");
+        //  更改sql样式在这个更改
+        String sql = boundSql.getSql().replaceAll("[\\s+]", "").replaceAll("from", "\tfrom\t").replaceAll("select", "\tselect\t");
         if (parameterMappings.size() > 0 && sqlParameter != null) {
             TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
             if (typeHandlerRegistry.hasTypeHandler(sqlParameter.getClass())) {
