@@ -20,12 +20,13 @@ public class ExceptionAdvice {
      *处理服务器异常
      * @param e 异常对象
      * @return
+     * 开发阶段不要打开，上线的时候再打开
      */
-    @ExceptionHandler(value = {Exception.class})
+/*    @ExceptionHandler(value = {Exception.class})
     public BaseResponse exceptionHandle(Exception e){
         log.error("服务错误！错误信息:[{}]",e.getMessage());
         return new BaseResponse(HttpStatusEnum.SERVER_ERROR.getCode(),HttpStatusEnum.SERVER_ERROR.getMsg(),"服务器错误！");
-    }
+    }*/
 
     /**
      * 处理参数校验异常
