@@ -19,7 +19,9 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<Student> queryList() {
-        return studentDao.queryAll(null);
+        Student student = new Student();
+            student.setName("曹操");
+        return studentDao.queryAll(student);
     }
 
     @Override
