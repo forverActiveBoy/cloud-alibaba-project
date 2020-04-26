@@ -62,4 +62,18 @@ public interface StudentDao {
      */
     int deleteById(Long id);
 
+    /**
+     *一对多关联查询
+     * @param studentName
+     * @return
+     */
+    List<Student> selectAdressList(String studentName);
+
+    /**
+     *查询学生对象总分数
+     * @param studentName
+     * @return
+     */
+    Student selectScoreSumByName(String studentName);
+
 }
