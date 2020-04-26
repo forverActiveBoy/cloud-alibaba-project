@@ -13,8 +13,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.stereotype.Component;
-
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -59,7 +59,7 @@ public class MybatisLogInterceptor implements Interceptor {
 
         Configuration configuration = mappedStatement.getConfiguration();
 
-        String targetSql = assembleSql(configuration, boundSql);
+        String targetSql = this.getSql(configuration, boundSql);
 
         long startTime = System.nanoTime();
         //  放行
@@ -67,87 +67,57 @@ public class MybatisLogInterceptor implements Interceptor {
         long endTime = System.nanoTime();
         //  执行耗时
         double appleTime = (endTime - startTime) / 1E9;
-        log.info("mapper名字mapperName:[{}] and dao方法名字:[{}] and sql耗时applyTime:[{}]秒 and targetSql:[{}]",mapperName,daoMethodName,appleTime,targetSql);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        log.info("当前执行时间:[{}] and mapper名字mapperName:[{}] and dao方法名字:[{}] and sql耗时applyTime:[{}]秒 and targetSql:[{}]",format.format(new Date()),mapperName,daoMethodName,appleTime,targetSql);
         return o;
     }
 
     /**
-     * 组装sql信息
-     *
+     * 获取SQL
      * @param configuration
      * @param boundSql
      * @return
      */
-    private String assembleSql(Configuration configuration, BoundSql boundSql) {
-        Object sqlParameter = boundSql.getParameterObject();
-        //  这个ParameterMapping表示当前SQL绑定的是哪些参数,及参数类型,但并不是参数本身
+    public String getSql(Configuration configuration, BoundSql boundSql) {
+        Object parameterObject = boundSql.getParameterObject();
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        //  更改sql样式在这个更改
-        String sql = boundSql.getSql().replaceAll("[\\s+]", "").replaceAll("from", "\tfrom\t").replaceAll("select", "\tselect\t");
-        if (parameterMappings.size() > 0 && sqlParameter != null) {
-            TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
-            if (typeHandlerRegistry.hasTypeHandler(sqlParameter.getClass())) {
-                sql = sql.replaceFirst("\\?", getParameterValue(sqlParameter));
-            } else {
-                MetaObject metaObject = configuration.newMetaObject(sqlParameter);
-                for (ParameterMapping parameterMapping : parameterMappings) {
-                    String propertyName = parameterMapping.getProperty();
-                    if (metaObject.hasGetter(propertyName)) {
-                        Object obj = metaObject.getValue(propertyName);
-                        sql = sql.replaceFirst("\\?", getParameterValue(obj));
-                    } else if (boundSql.hasAdditionalParameter(propertyName)) {
-                        Object obj = boundSql.getAdditionalParameter(propertyName);
-                        sql = sql.replaceFirst("\\?", getParameterValue(obj));
-                    }
+        //  修改sql样式在这里扩展
+        String sql = boundSql.getSql().toLowerCase().replaceAll("select\n","\nselect\n").replaceAll("insert into\n","\ninsert into\n").replaceAll("update\n","\nupdate\n").replaceAll("delete\n","\ndelete\n");
+        if (parameterObject == null || parameterMappings.size() == 0) {
+            return sql;
+        }
+        TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+        if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+            sql = sql.replaceFirst("\\?", getParameterValue(parameterObject));
+        } else {
+            MetaObject metaObject = configuration.newMetaObject(parameterObject);
+            for (ParameterMapping parameterMapping : parameterMappings) {
+                String propertyName = parameterMapping.getProperty();
+                if (metaObject.hasGetter(propertyName)) {
+                    Object obj = metaObject.getValue(propertyName);
+                    sql = sql.replaceFirst("\\?", getParameterValue(obj));
+                } else if (boundSql.hasAdditionalParameter(propertyName)) {
+                    Object obj = boundSql.getAdditionalParameter(propertyName);
+                    sql = sql.replaceFirst("\\?", getParameterValue(obj));
                 }
             }
-
         }
         return sql;
     }
 
-
-    /**
-     * 获取参数对应string值
-     *
-     * @param obj
-     * @return
-     */
-    private String getParameterValue(Object obj) {
+    public String getParameterValue(Object obj) {
         String value = "";
         if (obj instanceof String) {
-            value = "'".concat(obj.toString()).concat("'");
+            value = "'" + obj.toString() + "'";
         } else if (obj instanceof Date) {
-            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.CHINA);
-            value = "'".concat(dateFormat.format(new Date())) + "'";
+            DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.CHINA);
+            value = "'" + formatter.format(obj) + "'";
         } else {
             if (obj != null) {
                 value = obj.toString();
-            } else {
-                value = "";
             }
         }
-        return value != null ? makeStringAllRegExp(value) : value;
-    }
-
-    /**
-     * 转义正则特殊字符串
-     *
-     * @param str
-     * @return
-     */
-    private String makeStringAllRegExp(String str) {
-        if (str != null && !str.equals("")) {
-            return str.replace("\\", "\\\\").replace("*", "\\*")
-                    .replace("+", "\\+").replace("|", "\\|")
-                    .replace("{", "\\{").replace("}", "\\}")
-                    .replace("(", "\\(").replace(")", "\\)")
-                    .replace("^", "\\^").replace("$", "\\$")
-                    .replace("[", "\\[").replace("]", "\\]")
-                    .replace("?", "\\?").replace(",", "\\,")
-                    .replace(".", "\\.").replace("&", "\\&");
-        }
-        return str;
+        return value;
     }
 
     /**
@@ -160,10 +130,7 @@ public class MybatisLogInterceptor implements Interceptor {
      */
     @Override
     public Object plugin(Object target) {
-        if(target instanceof Executor){
-            return Plugin.wrap(target, this);
-        }
-        return target;
+        return Plugin.wrap(target, this);
     }
 
     @Override
