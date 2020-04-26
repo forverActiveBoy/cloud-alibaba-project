@@ -3,10 +3,21 @@
 <mapper namespace="com.czbank.dao.StudentDao">
 
     <resultMap type="com.czbank.entity.Student" id="StudentMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="score" column="score" jdbcType="NUMERIC"/>
-        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="score" column="score"/>
+        <result property="email" column="email"/>
+    </resultMap>
+
+    <resultMap id="student_adress_map" type="com.czbank.entity.Student">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="score" column="score"/>
+        <result property="email" column="email"/>
+        <collection property="adressList" ofType="com.czbank.entity.Adress">
+            <id property="id" column="adressId"/>
+            <result property="adress" column="adress"/>
+        </collection>
     </resultMap>
 
     <!--查询单个-->
@@ -28,20 +39,28 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="StudentMap">
         select
-          id, name, score, email
-        from student
+            id,
+            name,
+            score,
+            email
+        from
+            student
         <where>
             <if test="id != null">
-                and id = #{id}
+                and
+                id = #{id}
             </if>
             <if test="name != null and name != ''">
-                and name = #{name}
+                and
+                name = #{name}
             </if>
             <if test="score != null">
-                and score = #{score}
+                and
+                score = #{score}
             </if>
             <if test="email != null and email != ''">
-                and email = #{email}
+                and
+                email = #{email}
             </if>
         </where>
     </select>
@@ -73,5 +92,41 @@
     <delete id="deleteById">
         delete from cloud-alibaba.student where id = #{id}
     </delete>
+
+    <!--一对多关联查询-->
+    <select id="selectAdressList" resultMap="student_adress_map">
+        select
+            t1.id,
+            t1.`name`,
+            t1.email,
+            t2.adress,
+            t2.id adressId
+        from
+            student t1
+        left join
+            adress t2
+        on
+            t1.id = t2.student_id
+        where
+            t1.`name` = #{studentName}
+    </select>
+
+    <!--查询学生对象总分数-->
+    <select id="selectScoreSumByName" resultType="com.czbank.entity.Student">
+        select
+            t1.id,
+            t1.`name`,
+            t1.email,
+            t1.score,
+            sum(score) scoreSum
+        from
+            student t1
+        where
+            t1.`name` = #{studentName}
+        group by
+            t1.`name`
+        order by
+            id desc
+    </select>
 
 </mapper>
