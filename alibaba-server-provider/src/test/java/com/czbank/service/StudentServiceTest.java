@@ -5,11 +5,21 @@ import com.czbank.ProviderApplicatiion;
 import com.czbank.dao.StudentDao;
 import com.czbank.entity.Student;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
 import javax.annotation.Resource;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 
 
@@ -60,6 +70,28 @@ public class StudentServiceTest {
     }
 
     @Test
-    public void addStudent() {
+    public void sign() throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, IllegalBlockSizeException {
+        //  生成密钥对
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(1024,new SecureRandom());
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        PrivateKey aPrivate = keyPair.getPrivate();
+        PublicKey aPublic = keyPair.getPublic();
+        //  私钥
+        String privateKey = Base64.encodeBase64String(aPrivate.getEncoded());
+        //  公钥
+        String publicKey = Base64.encodeBase64String(aPublic.getEncoded());
+
+        //  签名
+        PublicKey publicKey1 = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.decodeBase64(publicKey)));
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE,publicKey1);
+        String signData = Base64.encodeBase64String(cipher.doFinal("测试加密".getBytes()));
+
+        //  解密
+        PrivateKey privateKey1 = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKey)));
+        cipher.init(Cipher.DECRYPT_MODE,privateKey1);
+        String srcData = new String(cipher.doFinal(Base64.decodeBase64(signData)));
+        System.out.println(srcData+"*********"+signData);
     }
 }
